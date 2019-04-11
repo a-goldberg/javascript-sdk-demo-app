@@ -16,4 +16,5 @@ module.exports = {
     extensions: ['.js'],
   },
   target: 'web',
+  mode: 'none'
 };
