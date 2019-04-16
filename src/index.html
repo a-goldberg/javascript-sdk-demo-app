@@ -26,37 +26,50 @@
             border: none;
             margin-top: 10px;
         }
-        
+
         #user-container {
-            border:1px solid black;
-            padding:8px;
-            text-align:left;
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            width: 100%;
+            height: 60px;
             display: flex;
-            flex-flow: row wrap;
-            justify-content: space-around;
-            width: 50%;
-            min-width: 400px;
-            
+            flex-flow: row nowrap;
+            justify-content: center;
+            align-items: center;
+            background-color: #b0c4de;
         }
+
+        #user-container>* {
+            font-size: 1.25em;
+        }
+
+        .userRow {
+            display: flex;
+            flex-flow: row nowrap;
+        }
+
+        .userProperty>b {
+            margin-right: 5px;
+        }
+
     </style>
     <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
     <script src="../dist/bundle.js"></script>
 </head>
 
 <body class="background--grey height--1-1">
+    <div id="user-container" style="display:none;">
+        <div><b>Who are you?</b></div>
+        <div id="users-list-container"></div>
+        <div id="user-details"></div>
+        <button id="input-name-button">Shop</button>
+    </div>
+
     <div class="flex flex-justified--center soft-quad--ends soft-double--bottom background--faint">
         <div class="max-width--large text--center text-align--center align--center">
             <img src="images/logo.png" class="width--200 text--center align--middle" align="middle" style="margin-bottom:35px">
             <h2 id="welcome"> Welcome to Attic & Button!</h2>
-            <div id="user-container" align="center">
-                <div>
-                    <p><b>Who are you?</b></p>
-                    <p id="users-list-container">
-                        <button id="input-name-button">Shop</button>
-                    </p>                
-                </div>
-                <div id="user-details"></div>
-            </div>
             <div id="feature-indicator" style="text: center; color: #cb1b2c;"></div>
             <div style="margin-top: 10px">
                 <div id="sorting"></div>
