@@ -10,7 +10,10 @@ window.activeUser = {}, window.items = [], window.userList = [];
 
 // primary function executed at load time
 async function main() {
+
+    ///////////////   Create Optimizely Client Instance //////////////////////
     const optimizelyClientInstance = await OptimizelyManager.createInstance();
+    //////////////////////////////////////////////////////////////////////////
 
     $(document).ready(function () {
         if (document.location.search.indexOf("emulate") > -1) {
@@ -50,8 +53,8 @@ async function main() {
         return items;
     }
 
+    // creates the table of products, using an A/B experiment to determine the number of items per row to display
     function _renderItemsTable(items) {
-        // creates the table of products, using an A/B experiment to determine the number of items per row to display
 
         let table = document.createElement('table');
         let i = 0;
@@ -99,6 +102,7 @@ async function main() {
         return table;
     }
 
+    // creates the item sorting dropdown menu based on feature rollout and feature test
     function _renderSortingDropdown() {
         const selectTitle = document.createElement('span');
         selectTitle.innerHTML += 'Sort Items By: ';
@@ -106,8 +110,12 @@ async function main() {
         selectTypes.setAttribute('id', 'sorting_type');
         selectTypes.innerHTML += '<option disabled selected value></option>';
 
-        // get feature test variation to determine order of sort options
+        // determine and handle order of item sort options
+
+        ////////// Get Feature Test Variable Value ///////////////////////////////////////////
         var first_option = optimizelyClientInstance.getFeatureVariableString('sorting_enabled', 'first_option', activeUser.id, activeUser);
+        //////////////////////////////////////////////////////////////////////////////////////
+
         if (first_option == "Price") {
             selectTypes.innerHTML += '<option value="price">Price</option>';
             selectTypes.innerHTML += '<option value="category">Category</option>';
@@ -121,13 +129,15 @@ async function main() {
         $('#sorting').on('change', function () {
             var sortType = $('#sorting_type option:selected').val();
             var userId = $('#users-list').val() || -1;
+
+            //////// Track Sorting Feature Engagement ////////////////////////////
             optimizelyClientInstance.track('sorting_change', userId, activeUser);
+            //////////////////////////////////////////////////////////////////////
+
             _buildItems().then(function (items) {
                 items = _.sortBy(items, sortType);
                 return _renderItemsTable(items);
-            }).then(function (tableHTML) {
-                $('#items-table').empty().html(tableHTML);
-
+            }).then(function () {
                 $(".buy-button").off("click").on("click", function () {
                     let userID = $('#users-list').val() || -1;
                     let itemID = $(this).data("itemid");
@@ -221,6 +231,7 @@ async function main() {
 
     }
 
+    // when emulating a user, this will set the active user and rebuild the UI based on roll outs & features affecting that user
     function shop(userID) {
         console.log("Shopping for user", userID);
         localStorage.setItem("opzDemoUser", userID);
