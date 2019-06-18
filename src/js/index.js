@@ -8,12 +8,16 @@ const _ = require('underscore');
 window.activeUser = {}, window.items = [], window.userList = [];
 //let optimizelyClientInstance = {};
 
+
+///////////////   Create Optimizely Client Instance //////////////////////
+const optimizelyClientInstance = OptimizelyManager.createInstance(main);
+//////////////////////////////////////////////////////////////////////////
+
+
+
 // primary function executed at load time
 async function main() {
 
-    ///////////////   Create Optimizely Client Instance //////////////////////
-    const optimizelyClientInstance = await OptimizelyManager.createInstance();
-    //////////////////////////////////////////////////////////////////////////
 
     $(document).ready(function () {
         if (document.location.search.indexOf("emulate") > -1) {
@@ -64,7 +68,11 @@ async function main() {
 
             // activate the A/B experiment to assign the number of items to display for this user
             if (Object.entries(activeUser).length > 0) {
+                
+                /////////  Activate client for user   ///////////////////////////////////////////////////////////////////////////
                 const num_items_variation = optimizelyClientInstance.activate('items_per_row', activeUser.id, activeUser);
+                /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                
                 if (!!num_items_variation) {
                     try {
                         var pattern = /^items_(\d+)$/g;
@@ -235,29 +243,34 @@ async function main() {
     function shop(userID) {
         console.log("Shopping for user", userID);
         localStorage.setItem("opzDemoUser", userID);
+        $("#features-list").empty();
 
-        // retrieve item sorting Feature Flag value for this user
+        //////////////// Is item sorting Feature enabled for this user? /////////////////////////////////////////////////////////////
         const isSortingEnabled = optimizelyClientInstance.isFeatureEnabled('sorting_enabled', userID, activeUser);
-
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        addFeatureIndicator("sorting enabled", isSortingEnabled, userID);
+        
         // display feature if enabled
         if (isSortingEnabled) {
             _renderSortingDropdown();
         } else {
             // ensure feature is hidden if disabled
             $('#sorting').hide();
-        }
+        }        
 
-        // update UI to display if Feature Flag is enabled
-        const indicatorBool = (isSortingEnabled) ? 'ON' : 'OFF';
-        const indicatorMessage = `[Feature ${indicatorBool}] The feature "sorting_enabled" is ${indicatorBool} for user ${userID}`;
-        $('#feature-indicator').html(indicatorMessage);
-
-        // retrieve welcome message Feature Flag value for this user
+        //////////////// Is welcome message feature enabled for this user? ////////////////////////////////////////////////////////////
         const showWelcomeMessage = optimizelyClientInstance.isFeatureEnabled('welcome_message_enabled', userID, activeUser);
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        addFeatureIndicator("welcome message", showWelcomeMessage, userID);
+        
         if (showWelcomeMessage) {
 
-            // retrieve welcome message Feature Test variation for this user
+            ////////////// retrieve welcome message Feature Test variation for this user //////////////////////////////////////////////  
             const welcomeMessageVar = optimizelyClientInstance.getFeatureVariableString('welcome_message_enabled', 'welcome_text', userID, activeUser);
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            
             if (!!welcomeMessageVar) {
                 $('#welcome').show().html(welcomeMessageVar);
             } else {
@@ -316,16 +329,22 @@ async function main() {
                 });
             }
 
-            // track purchase event
+            /////////// track purchase event  //////////////////////////////////////////////////////////////////////////
             await optimizelyClientInstance.track('item_purchase', userId, activeUser, itemAttributes);
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            
             //window.location.href = '/purchase.html';
         }
         return window.userList;
     }
+    
+    // update UI to display if Feature Flag is enabled
+    function addFeatureIndicator(featureName,isEnabled,id) {
+        var indicatorBool = (isEnabled) ? 'ON' : 'OFF';
+        var indicatorMessage = `The feature "${featureName}" is ${indicatorBool} for user ${id}`;
+        $('#features-list').append($("<div>").html(indicatorMessage).addClass(isEnabled ? "green" : "red"));
+    }
+    
 
 
 }
-
-
-
-main();
