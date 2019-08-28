@@ -62,27 +62,28 @@ async function main() {
 
         let table = document.createElement('table');
         let i = 0;
+        let itemsPerRow = 3; // default
+
+        // activate the A/B experiment to assign the number of items to display for this user
+        if (Object.entries(activeUser).length > 0) {
+
+            /////////  Activate client for user   ///////////////////////////////////////////////////////////////////////////
+            const num_items_variation = optimizelyClientInstance.activate('items_per_row', activeUser.id, activeUser);
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            if (!!num_items_variation) {
+                try {
+                    var pattern = /^items_(\d+)$/g;
+                    itemsPerRow = parseInt(pattern.exec(num_items_variation)[1]);
+                } catch (err) {
+                    console.error("Failed to find the number of items per row from the A/B experiment.  The value returned was:", num_items_variation);
+                }
+            }
+
+        }
         while (typeof items[i] !== 'undefined') {
             let row = table.insertRow(-1);
-            let itemsPerRow = 3; // default
 
-            // activate the A/B experiment to assign the number of items to display for this user
-            if (Object.entries(activeUser).length > 0) {
-                
-                /////////  Activate client for user   ///////////////////////////////////////////////////////////////////////////
-                const num_items_variation = optimizelyClientInstance.activate('items_per_row', activeUser.id, activeUser);
-                /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                
-                if (!!num_items_variation) {
-                    try {
-                        var pattern = /^items_(\d+)$/g;
-                        itemsPerRow = parseInt(pattern.exec(num_items_variation)[1]);
-                    } catch (err) {
-                        console.error("Failed to find the number of items per row from the A/B experiment.  The value returned was:", num_items_variation);
-                    }
-                }
-
-            }
 
             for (var c = 0; c < itemsPerRow; c++) {
                 let cell = row.insertCell(-1);
