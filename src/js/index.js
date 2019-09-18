@@ -12,7 +12,7 @@ window.activeUser = {}, window.items = [], window.userList = [];
 ///////////////   Create Optimizely Client Instance //////////////////////
 const optimizelyClientInstance = OptimizelyManager.createInstance(main);
 //////////////////////////////////////////////////////////////////////////
-
+window.optClient = optimizelyClientInstance;
 
 
 // primary function executed at load time

@@ -16,7 +16,7 @@ class OptimizelyManager {
       sdkKey: sdkKey,
       datafileOptions: {
           autoUpdate: true,
-          updateInterval: 30000
+          updateInterval: 10000
       },
       logger: logger.createLogger({
         logLevel: enums.LOG_LEVEL.INFO,
