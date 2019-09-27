@@ -105,7 +105,7 @@ window.activeUser = {}, window.items = [], window.userList = [];
 ///////////////   Create Optimizely Client Instance //////////////////////
 const optimizelyClientInstance = _optimizely_manager__WEBPACK_IMPORTED_MODULE_0__["default"].createInstance(main);
 //////////////////////////////////////////////////////////////////////////
-
+window.optClient = optimizelyClientInstance;
 
 
 // primary function executed at load time
@@ -125,12 +125,21 @@ async function main() {
                 let userID = $('#users-list').val() || -1;
                 shop(userID);
             });
+            $("#collapser").on("click", function() {
+                var $c = $("#collapser"), state = $c.hasClass("min");
+                if(state === true) {
+                    $("#features").show();
+                }
+                else $("#features").hide();
+                $c.toggleClass("min max");                
+            });
         });
     });
 
     async function _buildItems() {
         window.items = [];
         await $.ajax({
+            type: 'GET',
             url: './items.csv',
             dataType: 'text',
             success: function (data) {
@@ -151,11 +160,11 @@ async function main() {
     }
 
     // creates the table of products, using an A/B experiment to determine the number of items per row to display
-    function _renderItemsTable(items) {
-
+    async function _renderItemsTable(items) {
         let table = document.createElement('table');
         let i = 0;
-        let itemsPerRow = 3; // default
+        let defaultItems = 3;
+        let itemsPerRow = defaultItems; 
 
         // activate the A/B experiment to assign the number of items to display for this user
         if (Object.entries(activeUser).length > 0) {
@@ -164,6 +173,7 @@ async function main() {
             const num_items_variation = optimizelyClientInstance.activate('items_per_row', activeUser.id, activeUser);
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+            
             if (!!num_items_variation) {
                 try {
                     var pattern = /^items_(\d+)$/g;
@@ -172,6 +182,9 @@ async function main() {
                     console.error("Failed to find the number of items per row from the A/B experiment.  The value returned was:", num_items_variation);
                 }
             }
+            
+            addFeatureIndicator("experiment", "items_per_row", (!!num_items_variation ? itemsPerRow : num_items_variation), activeUser.id)
+
 
         }
         while (typeof items[i] !== 'undefined') {
@@ -343,7 +356,7 @@ async function main() {
         const isSortingEnabled = optimizelyClientInstance.isFeatureEnabled('sorting_enabled', userID, activeUser);
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        addFeatureIndicator("sorting enabled", isSortingEnabled, userID);
+        addFeatureIndicator("feature", "sorting enabled", isSortingEnabled, userID);
         
         // display feature if enabled
         if (isSortingEnabled) {
@@ -357,7 +370,7 @@ async function main() {
         const showWelcomeMessage = optimizelyClientInstance.isFeatureEnabled('welcome_message_enabled', userID, activeUser);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-        addFeatureIndicator("welcome message", showWelcomeMessage, userID);
+        addFeatureIndicator("feature", "welcome message", showWelcomeMessage, userID);
         
         if (showWelcomeMessage) {
 
@@ -373,8 +386,20 @@ async function main() {
             }
 
         } else $("#welcome").hide();
+        
+       
+        _renderItemsTable(window.items).then(function(){
+           const buttonColor = optimizelyClientInstance.activate("cta_color", activeUser.id, activeUser);
 
-        _renderItemsTable(window.items);
+            if(!!buttonColor) {
+                    $("button.red-button.buy-button").css("background", buttonColor);
+            }
+
+            addFeatureIndicator("experiment", "cta_color", buttonColor, activeUser.id);
+  
+        });
+        
+        
     }
 
     // log a purchase event, using user ID and item attributes
@@ -433,10 +458,19 @@ async function main() {
     }
     
     // update UI to display if Feature Flag is enabled
-    function addFeatureIndicator(featureName,isEnabled,id) {
-        var indicatorBool = (isEnabled) ? 'ON' : 'OFF';
-        var indicatorMessage = `The feature "${featureName}" is ${indicatorBool} for user ${id}`;
-        $('#features-list').append($("<div>").html(indicatorMessage).addClass(isEnabled ? "green" : "red"));
+    function addFeatureIndicator(featureType,featureName,featureValue,id) {
+        var indicatorState = (function(type,val){
+            switch(type) {
+                case "feature":
+                    return (val) ? 'ON' : 'OFF';
+                    break;
+                case "experiment":
+                    return (val === null ? "OFF" : val);
+                    break;
+            }
+        })(featureType,featureValue);
+        var indicatorMessage = `The ${featureType} "${featureName}" is ${indicatorState} for user ${id}`;
+        $('#features-list').append($("<div>").html(indicatorMessage).addClass(!featureValue ? "red" : "green"));
     }
     
 
@@ -465,12 +499,11 @@ class OptimizelyManager {
 
   // instantiate the Optimizely client
   static createInstance(initCallback,updateCallback) {
-    //    var datafile = await _getDatafile();  // pre-datafile management
     let instance = optimizely.createInstance({
       sdkKey: _constants__WEBPACK_IMPORTED_MODULE_0__["sdkKey"],
       datafileOptions: {
           autoUpdate: true,
-          updateInterval: 30000
+          updateInterval: 10000
       },
       logger: logger.createLogger({
         logLevel: enums.LOG_LEVEL.INFO,
@@ -513,18 +546,6 @@ class OptimizelyManager {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (OptimizelyManager);
-
-// fetch JSON datafile from CDN
-// no longer used, in favor of built-in datafile management with automatic downloading
-async function _getDatafile() {
-  return await fetch(_constants__WEBPACK_IMPORTED_MODULE_0__["datafileURL"])
-    .then(function (response) {
-      if (response.status >= 400) {
-        console.log('Error downloading datafile');
-      }
-      return response.json();
-    });
-}
 
 
 /***/ }),
@@ -16046,11 +16067,9 @@ if (!self.fetch) {
 // constants.js
 
 // Default datafile provided to get up and running quickly. Replace with your own!
-const datafileURL = 'https://cdn.optimizely.com/json/14559360552.json';
-const sdkKey = '487G98QeGH4LdnV37rNTCt';
+var sdkKey = '487G98QeGH4LdnV37rNTCt';
 module.exports = {
-    datafileURL,
-    sdkKey  
+    sdkKey
 };
 
 

@@ -1,15 +1,15 @@
-const path = require('path')
+const path = require('path');
 const express = require('express');
-const {
-    datafileURL
-} = require('./constants');
+//const {
+//    datafileURL
+//} = require('./constants');
 const bodyParser = require('body-parser');
 const app = new express();
 
-if (!datafileURL) {
-    console.log('WARNING: No datafile URL provided');
-    return;
-}
+//if (!datafileURL) {
+//    console.log('WARNING: No datafile URL provided');
+//    return;
+//}
 
 
 app.use(express.static(__dirname + '/src'));

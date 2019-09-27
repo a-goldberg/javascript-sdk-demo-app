@@ -1,0 +1,96 @@
+table,
+th,
+td,
+div {
+    padding: 5px;
+}
+
+td {
+    background: white;
+    font-family: tahoma;
+    text-align: center;
+}
+
+.red-button {
+    padding: 8px 15px;
+    background: #cb1b2c;
+    color: #ffffff;
+    border: none;
+    margin-top: 10px;
+}
+
+#user-banner {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+    background-color: #b0c4de;
+    width: 100%;
+    height: auto;
+}
+
+#user-container {
+    width: 100%;
+    height: 60px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#user-container>* {
+    font-size: 1.25em;
+}
+
+.userRow {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.userProperty>b {
+    margin-right: 5px;
+}
+
+#features {
+    display: none;
+}
+
+#features-list {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#collapser {
+    margin: 0 2em 0 0;
+    height: 1em;
+    width: 1em;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 0;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+}
+
+#collapser.min > span::after {
+    content: "+";
+}
+
+#collapser.max > span::after {
+    content: "-";
+}
+
+.collapsed {
+    display: none;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}

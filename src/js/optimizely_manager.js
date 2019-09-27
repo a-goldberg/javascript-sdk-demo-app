@@ -4,14 +4,13 @@ var enums = require('@optimizely/optimizely-sdk').enums;
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
-import {datafileURL, sdkKey} from '../../constants';  // datafileURL no longer used with ADM update in 3.2.0
+import {sdkKey} from '../../constants';  // datafileURL no longer used with ADM update in 3.2.0
 
 
 class OptimizelyManager {
 
   // instantiate the Optimizely client
   static createInstance(initCallback,updateCallback) {
-    //    var datafile = await _getDatafile();  // pre-datafile management
     let instance = optimizely.createInstance({
       sdkKey: sdkKey,
       datafileOptions: {
@@ -59,15 +58,3 @@ class OptimizelyManager {
 }
 
 export default OptimizelyManager;
-
-// fetch JSON datafile from CDN
-// no longer used, in favor of built-in datafile management with automatic downloading
-async function _getDatafile() {
-  return await fetch(datafileURL)
-    .then(function (response) {
-      if (response.status >= 400) {
-        console.log('Error downloading datafile');
-      }
-      return response.json();
-    });
-}
