@@ -1,27 +1,30 @@
 # JavaScript SDK Demo App
 
-This demo uses the JavaScript SDK, a part of Optimizely's Full Stack 2.0 solution. It will walk you through:
+This demo uses the JavaScript (Node) SDK, a part of Optimizely's Full Stack solution. It will walk you through:
 
 1. The capabilities of Feature Management
 2. How to put an in-development feature behind a Feature Flag
 3. How to launch to users with a controlled Rollout
 4. How to use a Feature Configuration
 5. How to run a Feature Test
-6. How to track business metrics
+6. How to run a code-based A/B Test
+7. How to track business metrics
+8. How to target users for rollouts and tests with Audiences built on user attributes
+ 
 
-## Optimizely Full Stack 2.0 Overview
+## Optimizely Full Stack Overview
 
-Optimizely Full Stack allows developers to leverage Feature Management and run experiments anywhere in code! The JavaScript SDK provides the core components and handles aspects like bucketing, which is used to designate users to a specific Feature Flag or experiment variation, conversion tracking, and reporting via Optimizely’s [Stats Engine](https://www.optimizely.com/statistics/).
+Optimizely Full Stack allows developers to leverage Feature Management and run experiments anywhere in code! The JavaScript SDK provides the core components and handles aspects like bucketing, which is used to designate users to a specific Feature Flag or experiment variation; conversion tracking; and reporting via Optimizely’s [Stats Engine](https://www.optimizely.com/statistics/).
 
-* View the [JavaScript Getting Started Guide](http://developers.optimizely.com/server/getting-started/index.html?language=python)
+* View the [Full Stack Developer Documentation](https://docs.developers.optimizely.com/full-stack/docs/)
 
-* View the reference [documentation](http://developers.optimizely.com/server/reference/index.html?language=javascript).
+* View the JavaScript SDK 3.2 reference [docs](https://docs.developers.optimizely.com/full-stack/docs/javascript-node-sdk).
 
 * Latest [JavaScript SDK](https://github.com/optimizely/javascript-sdk)
 
 ## Demo App
 
-This example app illustrates how an online retailer could developer a new feature behind a toggle, rollout it out gradually to more users and run an experiment on the new vs old experience by tracking a business metric.
+This example app demonstrates all of the basic capabilities of Optimizely X Full Stack in a simple web app.  It shows how an online retailer could developer a new feature behind a toggle, roll it out gradually to users (targeted or not), and run an experiment on various feature configurations and other user experience components by tracking a business metric.
 
 Using the instructions below, you can run the app locally and mimic bucketing website visitors by entering unique user IDs into the input bar. For example, the user ID “Matt” would simulate a unique visitor and the SDK would determine whether the feature shold be shown. The bucket that is given to a specific unique visitor, such as Matt, will be deterministic. This means as long as the Optimizely conditions remain the same, Matt will always get the same experience.
  

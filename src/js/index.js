@@ -5,8 +5,7 @@
 // sdk installed and datafile retrieved
 import OptimizelyManager from './optimizely_manager';
 const _ = require('underscore');
-window.activeUser = {}, window.items = [], window.userList = [];
-//let optimizelyClientInstance = {};
+window.activeUser = {}, window.items = [], window.userList = [], window.indicatorQueue = [];
 
 
 ///////////////   Create Optimizely Client Instance //////////////////////
@@ -31,7 +30,9 @@ async function main() {
                 _setActiveUser();
                 let userID = $('#users-list').val() || -1;
                 shop(userID);
+                
             });
+            
             
             $("#collapser").on("click", function() {
                 var $c = $("#collapser"), hide = $c.hasClass("min");
@@ -46,6 +47,7 @@ async function main() {
 
     async function _buildItems() {
         window.items = [];
+        
         await $.ajax({
             type: 'GET',
             url: './items.csv',
@@ -58,7 +60,7 @@ async function main() {
                         name: item[0],
                         color: item[1],
                         category: item[2],
-                        price: parseInt(item[3].slice(1)),
+                        origPrice: parseInt(item[3].slice(1)),
                         imageUrl: item[4],
                     });
                 }
@@ -91,10 +93,21 @@ async function main() {
                 }
             }
             
-            addFeatureIndicator("experiment", "items_per_row", (!!num_items_variation ? itemsPerRow : num_items_variation), activeUser.id)
+            addFeatureIndicator("experiment","items_per_row",(!!num_items_variation ? itemsPerRow : num_items_variation), activeUser.id);
 
+        
+            //////////////////////// dynamic pricing ///////////////////////////////////////////////////////////////////////////
+            var dynamic_pricing_enabled = optimizelyClientInstance.isFeatureEnabled('dynamic_pricing', activeUser.id, activeUser);
+            var discount_rate = dynamic_pricing_enabled ? optimizelyClientInstance.getFeatureVariableDouble('dynamic_pricing', 'discount_rate', activeUser.id, activeUser) : 0;
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+            addFeatureIndicator("experiment", "discount_rate", "$" + (discount_rate || 0), activeUser.id);
 
         }
+
+        
         while (typeof items[i] !== 'undefined') {
             let row = table.insertRow(-1);
 
@@ -103,9 +116,11 @@ async function main() {
                 let cell = row.insertCell(-1);
                 let cellContent = document.createElement('div');
                 if (!!items[i]) {
+                    
+                    items[i].price = items[i].origPrice - discount_rate;
                     cellContent.innerHTML = items[i].name;
                     cellContent.innerHTML += ' in ' + items[i].color + '<br>';
-                    cellContent.innerHTML += '<b>' + items[i].category + ', $' + items[i].price + '</b>';
+                    cellContent.innerHTML += '<b>' + items[i].category + ', $' + items[i].price  + '</b>';
                     cellContent.innerHTML += '<img src="./images/' + items[i].imageUrl + '" >';
                     cellContent.innerHTML += '<button data-itemid="' + i + '"' + 'class="red-button buy-button">Buy Now</button>';
                 }
@@ -282,9 +297,9 @@ async function main() {
         
         if (showWelcomeMessage) {
 
-            ////////////// retrieve welcome message Feature Test variation for this user //////////////////////////////////////////////  
+            ////////////// retrieve welcome message Feature Test variation for this user /////////////////////////////////  
             const welcomeMessageVar = optimizelyClientInstance.getFeatureVariableString('welcome_message_enabled', 'welcome_text', userID, activeUser);
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////////
             
             if (!!welcomeMessageVar) {
                 $('#welcome').show().html(welcomeMessageVar);
@@ -297,16 +312,21 @@ async function main() {
         
        
         _renderItemsTable(window.items).then(function(){
-           const buttonColor = optimizelyClientInstance.activate("cta_color", activeUser.id, activeUser);
+ 
+            ////////////////////////////  determine add-to-cart CTA color from experiment ///////////////////////////////
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            const buttonColor = optimizelyClientInstance.activate("cta_color", activeUser.id, activeUser);
 
             if(!!buttonColor) {
                     $("button.red-button.buy-button").css("background", buttonColor);
             }
 
             addFeatureIndicator("experiment", "cta_color", buttonColor, activeUser.id);
+
   
         });
         
+
         
     }
 
@@ -377,8 +397,18 @@ async function main() {
                     break;
             }
         })(featureType,featureValue);
-        var indicatorMessage = `The ${featureType} "${featureName}" is ${indicatorState} for user ${id}`;
-        $('#features-list').append($("<div>").html(indicatorMessage).addClass(!featureValue ? "red" : "green"));
+        indicatorQueue.push({message:`The ${featureType} "${featureName}" is ${indicatorState} for user ${id}`,color:(!featureValue ? "red" : "green")});
+        printIndicators();        
+    }
+    
+    function printIndicators() {
+        if(!!$("features-list")) {
+            while(indicatorQueue.length > 0) {
+                var indicator = indicatorQueue.pop();
+                $('#features-list').append($("<div>").html(indicator.message).addClass(indicator.color));
+            }
+
+        }
     }
     
 

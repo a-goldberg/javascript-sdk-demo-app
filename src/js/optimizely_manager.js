@@ -41,6 +41,12 @@ class OptimizelyManager {
             
             console.info("%cDecision of type %s triggered for user %s.  Decision info follows:","color:blue",data.type,data.userId);
             console.dir(data.decisionInfo);
+            try {
+                printIndicators();
+            }
+            catch(e) {
+//                console.warn("Failed to print indicators",e.message);
+            }
         }
     );
       
