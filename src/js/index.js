@@ -74,7 +74,8 @@ async function main() {
         let table = document.createElement('table');
         let i = 0;
         let defaultItems = 3;
-        let itemsPerRow = defaultItems; 
+        let itemsPerRow = defaultItems;
+        let discount_rate = 0;
 
         // activate the A/B experiment to assign the number of items to display for this user
         if (Object.entries(activeUser).length > 0) {
@@ -98,7 +99,7 @@ async function main() {
         
             //////////////////////// dynamic pricing ///////////////////////////////////////////////////////////////////////////
             var dynamic_pricing_enabled = optimizelyClientInstance.isFeatureEnabled('dynamic_pricing', activeUser.id, activeUser);
-            var discount_rate = dynamic_pricing_enabled ? optimizelyClientInstance.getFeatureVariableDouble('dynamic_pricing', 'discount_rate', activeUser.id, activeUser) : 0;
+            discount_rate = dynamic_pricing_enabled ? optimizelyClientInstance.getFeatureVariableDouble('dynamic_pricing', 'discount_rate', activeUser.id, activeUser) : 0;
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -128,7 +129,7 @@ async function main() {
                 i += 1;
             }
         }
-        $('#items-table').empty().html(table);
+        $('#items-table').empty().html(table.innerHTML);
 
         $(".buy-button").off("click").on("click", function () {
             let userID = $('#users-list').val() || -1;
@@ -155,17 +156,16 @@ async function main() {
         //////////////////////////////////////////////////////////////////////////////////////
 
         if (first_option == "Price") {
-            selectTypes.innerHTML += '<option value="price">Price</option>';
-            selectTypes.innerHTML += '<option value="category">Category</option>';
+            selectTypes.innerHTML = '<option value="price">Price</option><option value="category">Category</option>';
         } else {
-            selectTypes.innerHTML += '<option value="category">Category</option>';
-            selectTypes.innerHTML += '<option value="price">Price</option>';
+            selectTypes.innerHTML = '<option value="category">Category</xoption><option value="price">Price</option>';
         }
 
         selectTitle.appendChild(selectTypes)
-        $('#sorting').html(selectTitle);
-        $('#sorting').on('change', function () {
+        $('#sorting').html(selectTitle).show();
+        $('#sorting').off('change').on('change', function () {
             var sortType = $('#sorting_type option:selected').val();
+            if(sortType == "price") sortType = "origPrice";
             var userId = $('#users-list').val() || -1;
 
             //////// Track Sorting Feature Engagement ////////////////////////////
